@@ -1,0 +1,20 @@
+:root {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 1rem;
+}
+
+#search {
+  all: unset;
+  border: 1px solid #ccc;
+  padding: 3px;
+  margin-bottom: 10px;
+}
+
+#results {
+  display: grid;
+  grid-template-columns: max-content max-content 1fr;
+  gap: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
