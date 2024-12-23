@@ -2,8 +2,9 @@ import WebSocket, { WebSocketServer } from 'ws'
 import { findParts, getParts, getProduct } from './db'
 import { dirname, join } from 'path'
 import express from 'express'
+import { Message, MessageType } from './types'
 
-const __dirname = '/Users/adamvincent/Downloads/server/'
+const __dirname = 'C:/Users/Adam/Documents/SAP Website/temp/'
 
 const app = express()
 app.use(express.static(join(__dirname, 'public')))
@@ -18,36 +19,27 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', async data => {
     try {
-      const m = JSON.parse(String(data))
-      const res = await findParts(m.data.text)
-      ws.send(JSON.stringify({ wsId: m.wsId, data: res }))
+      const m = JSON.parse(String(data)) as Message
+
+      switch (m.type) {
+        case MessageType.SearchParts:
+          const data1 = (await findParts(m.data.text)) as Object
+          const res1: Message = { type: MessageType.Response, id: m.id, data: data1 }
+          ws.send(JSON.stringify(res1))
+          break
+        case MessageType.GetProduct:
+          console.log(m)
+          const data2 = await getProduct(m.data.uid)
+          const res2: Message = { type: MessageType.Response, id: m.id, data: data2 }
+          ws.send(JSON.stringify(res2))
+          break
+      }
     } catch (e) {
       console.log(e)
     }
   })
 })
 
-app.listen(3000, () => console.log('http://192.168.2.158:3000/'))
+app.listen(3000, () => console.log('http://192.168.2.117:3000/'))
 
-const test = async () => {
-  const uid = 'wnhereDpZ4lD'
-  type Res = { productUid: string; uid: string; qty: number; prod: 0 | 1 }[]
-  const data = (await getProduct(uid)) as Res
 
-  const getChildren = (parentUid: string): any => {
-    return data
-      .filter(p => p.productUid == parentUid)
-      .map(i => {
-        if (i.prod) {
-          return { uid: i.uid, qty: i.qty, sub: getChildren(i.uid) }
-        }
-        return { uid: i.uid, qty: i.qty }
-      })
-  }
-
-  const t: any = { uid, parts: {}, sub: getChildren(uid) }
-  data.forEach(d => (t.parts[d.uid] = d))
-
-  console.log(JSON.stringify(t))
-}
-test()
