@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3'
 import { createId } from './utils'
-import { Part, Parts, Product } from './types'
+import { Machine, Machines, Material, Materials, Midwest, Midwests, Part, Parts, Product } from './types'
 
 const db = new sqlite3.Database('./setup/projects.db')
 
@@ -32,12 +32,40 @@ export const getProducts = async () => {
   })
 }
 
+export const getMaterials = async (): Promise<Materials> => {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT * FROM materials`, (err, rows: Material[]) => {
+      if (err) reject(err)
+      resolve(Object.fromEntries(rows.map(i => [i.uid, i])))
+    })
+  })
+}
+
+export const getMachines = async (): Promise<Machines> => {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT * FROM machines`, (err, rows: Machine[]) => {
+      if (err) reject(err)
+      resolve(Object.fromEntries(rows.map(i => [i.uid, i])))
+    })
+  })
+}
+
+export const getMidwests = async (): Promise<Midwests> => {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT * FROM midwests`, (err, rows: Midwest[]) => {
+      if (err) reject(err)
+      resolve(Object.fromEntries(rows.map(i => [i.uid, i])))
+    })
+  })
+}
+
 type Res = { uid: string; parts: Parts; sub: Product[] }
+
 export const getProduct = async (uid: string): Promise<Res | Error> => {
   return new Promise((resolve, reject) => {
     db.all(
       `WITH RECURSIVE data AS (
-        SELECT '000000000000' AS productUid, 1 AS qty, p.uid, p.id, p.prod, p.name, p.cost, p.mtrl, p.unit, p.lgth, p.pPSh, p.anod, p.heat, p.oxid, p.zinc, p.pwdr, p.pltT, p.grdT, p.fltT, p.brkT, p.sndT, p.pemT, p.pasT, p.pasL, p.lsrT, p.lsrL, p.sawN, p.sawT, p.milN, p.milT, p.milL, p.lthN, p.lthT, p.lthL, p.rtrN, p.rtrT, p.rtrL, p.mrkN, p.mrkT, p.mrkL
+        SELECT '------------' AS productUid, 1 AS qty, p.uid, p.id, p.prod, p.name, p.cost, p.mtrl, p.unit, p.lgth, p.pPSh, p.anod, p.heat, p.oxid, p.zinc, p.pwdr, p.pltT, p.grdT, p.fltT, p.brkT, p.sndT, p.pemT, p.pasT, p.pasL, p.lsrT, p.lsrL, p.sawN, p.sawT, p.milN, p.milT, p.milL, p.lthN, p.lthT, p.lthL, p.rtrN, p.rtrT, p.rtrL, p.mrkN, p.mrkT, p.mrkL
         FROM parts p 
         WHERE p.uid = '${uid}'
 
@@ -47,18 +75,18 @@ export const getProduct = async (uid: string): Promise<Res | Error> => {
         FROM parts p 
         INNER JOIN bom b ON p.uid = b.partUid 
         INNER JOIN data ON b.productUid = data.uid 
-      ) SELECT * FROM data;`,              
+      ) SELECT * FROM data;`,
 
       (err: Error, rows: (Part & { productUid: string; qty: number })[]) => {
         if (err) reject(err)
-        const getChildren = (parentUid: string): Product[] => {
-          return rows
+
+        const getChildren = (parentUid: string): Product[] =>
+          rows
             .filter(p => p.productUid == parentUid)
             .map(i => {
               if (i.prod) return { uid: i.uid, qty: i.qty, sub: getChildren(i.uid) }
               return { uid: i.uid, qty: i.qty }
             })
-        }
 
         const t: Res = { uid, parts: {}, sub: getChildren(uid) }
         rows.forEach(d => (t.parts[d.uid] = d))
@@ -91,7 +119,6 @@ const b = [
   ['A4', 'P1', 4],
   ['A4', 'P3', 2],
 ]
-
 
 // db.serialize(() => {
 //   const sPart = db.prepare('INSERT INTO parts VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?)')
