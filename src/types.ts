@@ -46,13 +46,18 @@ export interface GetMidwestsMessage {
   id: string
 }
 
+export interface GetProductsMessage {
+  type: MessageType.GetProducts
+  id: string
+}
+
 export interface ResponseMessage {
   type: MessageType.Response
   id: string
   data: Object
 }
 
-export type Message = SearchPartsMessage | GetProductMessage | ResponseMessage | GetMaterialsMessage | GetMidwestsMessage | GetMachinesMessage
+export type Message = SearchPartsMessage | GetProductMessage | ResponseMessage | GetMaterialsMessage | GetMidwestsMessage | GetMachinesMessage | GetProductsMessage
 
 export interface Product {
   uid: string

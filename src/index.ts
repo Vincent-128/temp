@@ -1,9 +1,8 @@
-import { findParts, getMachines, getMaterials, getMidwests, getParts, getProduct } from './db'
+import { findParts, getMachines, getMaterials, getMidwests, getParts, getProduct, getProducts } from './db'
 import { Message, MessageType } from './types'
 import { WebSocketServer } from 'ws'
 import express from 'express'
 
-// const __dirname = 'C:/Users/Adam/Documents/SAP Website/temp/'
 const path = __dirname.substring(0, __dirname.length - 3)
 
 const app = express()
@@ -15,11 +14,13 @@ app.get('/', async (req, res) => {
 })
 
 wss.on('connection', function connection(ws) {
+  console.log('connected')
   ws.on('error', console.error)
 
   ws.on('message', async data => {
     try {
       const m = JSON.parse(String(data)) as Message
+      console.log(m)
 
       switch (m.type) {
         case MessageType.SearchParts:
@@ -47,6 +48,10 @@ wss.on('connection', function connection(ws) {
           const res5: Message = { type: MessageType.Response, id: m.id, data: data5 }
           ws.send(JSON.stringify(res5))
           break
+        case MessageType.GetProducts:
+          const data6 = await getProducts()
+          const res6: Message = { type: MessageType.Response, id: m.id, data: data6 }
+          ws.send(JSON.stringify(res6))
       }
     } catch (e) {
       console.log(e)

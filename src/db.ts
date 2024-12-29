@@ -23,9 +23,10 @@ export const findParts = async (text: string) => {
   })
 }
 
-export const getProducts = async () => {
+export const getProducts = async (): Promise<any> => {
   return new Promise((resolve, reject) => {
     db.all(`SELECT uid, id, name FROM parts WHERE prod = 1 LIMIT 10`, (err, rows) => {
+      console.log(rows)
       if (err) reject(err)
       resolve(rows)
     })
@@ -75,7 +76,7 @@ export const getProduct = async (uid: string): Promise<Res | Error> => {
         FROM parts p 
         INNER JOIN bom b ON p.uid = b.partUid 
         INNER JOIN data ON b.productUid = data.uid 
-      ) SELECT * FROM data;`,
+      ) SELECT uid, id, prod, name, cost, mtrl, unit, lgth, pPSh, anod, heat, oxid, zinc, pwdr, pltT, p.grdT, p.fltT, p.brkT, p.sndT, p.pemT, p.pasT, p.pasL, p.lsrT, p.lsrL, p.sawN, p.sawT, p.milN, p.milT, p.milL, p.lthN, p.lthT, p.lthL, p.rtrN, p.rtrT, p.rtrL, p.mrkN, p.mrkT, p.mrkL FROM data;`,
 
       (err: Error, rows: (Part & { productUid: string; qty: number })[]) => {
         if (err) reject(err)
